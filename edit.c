@@ -6,13 +6,13 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include <fcntl.h>
 #include <signal.h>
 #include "mcp/syscalls.h"
 #include "input.h"
+#include "posix_stuff.h" 
 
 /* Syntax highlight types */
 #define HL_NORMAL 0
@@ -62,8 +62,8 @@ static char *helpText =
     ">> PRESS ANYKEY TO EXIT <<\n";
 
 static int chan_dev = 0;
-static unsigned char initialFgColor = 0;
-static unsigned char initialBgColor = 0;
+static short initialFgColor = 0;
+static short initialBgColor = 0;
 
 struct editorSyntax {
     char *extension;
@@ -804,7 +804,7 @@ void editorRefreshScreen(void) {
     char buf[32];
     struct abuf ab = ABUF_INIT;
 
-    sys_txt_set_cursor_visible(chan_dev, 0);
+    sys_txt_set_cursor_vis(chan_dev, 0);
 
     // abAppend(&ab,"\x1b[?25l",6); /* Hide cursor. */
     abAppend(&ab,"\x1b[H",3); /* Go home. */
@@ -907,7 +907,7 @@ void editorRefreshScreen(void) {
     updateCursorGlyph();
 #endif
     
-    sys_txt_set_cursor_visible(chan_dev, 1);
+    sys_txt_set_cursor_vis(chan_dev, 1);
     abFree(&ab);
 }
 
@@ -1232,7 +1232,7 @@ void restoreDisplay() {
 
 void showHelp() {
     restoreDisplay();
-    printf(helpText);
+    printf("%s", helpText);
     cli_getchar(0);
     sys_chan_write(0,(unsigned char *)"\x1b[37;40m",8);
 }
@@ -1361,6 +1361,7 @@ getline(char **buf, size_t *bufsiz, FILE *fp)
 }
 
 int main(int argc, char **argv) {
+    printf("\nFoenixEdit started\n");
     const char *edit_filename = sys_var_get("edit_filename");
     const char *edit_shell = sys_var_get("edit_shell");
     
@@ -1370,7 +1371,7 @@ int main(int argc, char **argv) {
         sys_var_set("edit_filename", NULL);
     } else {
         if (argc != 2) {
-            fprintf(stderr,"Usage: edit <filename>\n");
+            printf("\nUsage: edit <filename>\n");
             exit(1);
         }
         edit_filename = argv[1];

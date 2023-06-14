@@ -149,7 +149,7 @@ short cli_getchar(short channel) {
         switch (state) {
             case CLI_ES_BASE:
                 // We are not processing a sequence...
-                if (c == CHAR_ESC) {
+                if (c == ESC) {
                     // Escape has been seen
                     state = CLI_ES_ESC;
 
